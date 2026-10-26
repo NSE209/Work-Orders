@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>North Star Engineering Group, Inc. - Extra Work Order</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    @page { size: letter portrait; margin: 0.3in; }
+    @media print {
+      body { background: #ffffff !important; padding: 0 !important; margin: 0 !important; }
+      .no-print { display: none !important; }
+      #work-order-sheet { border: none !important; box-shadow: none !important; margin: 0 auto !important; width: 100% !important; max-width: 100% !important; padding: 0 !important; }
+      input, textarea { border-color: #cbd5e1 !important; background-color: transparent !important; color: #0f172a !important; opacity: 1 !important; -webkit-text-fill-color: #0f172a !important; }
+      textarea { resize: none !important; overflow: visible !important; }
+      tr, canvas { break-inside: avoid; page-break-inside: avoid; }
+      * { letter-spacing: normal !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen py-4 px-2 sm:px-4 font-sans antialiased text-slate-800">
+  <div class="max-w-4xl mx-auto">
+
+    <div id="toast" class="hidden mb-3 p-3 bg-emerald-800 text-white text-xs sm:text-sm font-semibold rounded-lg shadow-md flex items-center justify-between no-print transition-all">
+      <span id="toast-text">PDF downloaded successfully.</span>
+      <button onclick="dismissToast()" class="text-white hover:text-emerald-200 text-base font-bold ml-4">&times;</button>
+    </div>
+
+    <div id="work-order-sheet" class="bg-white border border-slate-300 rounded-xl shadow-lg p-5 sm:p-7 mx-auto box-border transition-all" style="max-width: 820px;">
+
+      <!-- HEADER -->
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-3 border-b-2 border-emerald-900">
+        <img src="data:image/jpeg;base64,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/T8kKOlFFFfXnnBRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFZXiVPM8GavH62Uw/8AIZrVqjrCeZ4ev4/71vIP/HTUz+FjW5x3wwTGk3jf9NFX8h/9eu9rhfheCfDE0rHJaUZ/75H+Nd3XgcL0vZ5dTj/i/wDSmdWPlzVm/T8kLRRRX0JyBRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFV7xfM0+eP+9Gw/SrFIRlSD3pPYEcX8M4/L8HdDzID/5DSuz/AIq5jwJB5HhGFMfwxn/yEldP3rz8pp+zw0Y+v5s0rO87jqKKK9EzCiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKAMrQ7cW2jQw4+6kY/8hqK1O1IqKiBQOBTqzhBQVkNu4UUUVoIKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooA/9k=" alt="North Star Engineering Group, Inc." class="select-none" style="height: 96px; width: auto; max-width: 100%;" />
+
+        <div class="flex flex-wrap items-center gap-2 no-print w-full sm:w-auto">
+          <button type="button" id="btn-save-email" onclick="handleEmailWithPdf()" class="flex-1 sm:flex-none inline-flex items-center justify-center px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900 text-white text-xs font-bold rounded-lg shadow transition">
+            <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+            Email Invoice
+          </button>
+          <button type="button" id="btn-download" onclick="handleDownloadPdf()" class="flex-1 sm:flex-none inline-flex items-center justify-center px-3.5 py-2 bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-slate-950 text-xs font-bold rounded-lg shadow transition">
+            <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+            Download PDF
+          </button>
+          <button type="button" onclick="handleOpenPdf()" class="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-semibold rounded-lg shadow-sm transition">
+            Open PDF
+          </button>
+          <button type="button" onclick="window.print()" class="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-semibold rounded-lg shadow-sm transition">
+            <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+            Print
+          </button>
+        </div>
+      </div>
+
+      <div class="text-center my-2.5">
+        <h2 class="text-xl font-black tracking-widest text-emerald-950 uppercase leading-none">EXTRA WORK ORDER</h2>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-xs">
+        <div><label class="block font-bold text-slate-700 mb-0.5" for="field-date">Date:</label>
+          <input id="field-date" type="date" class="w-full px-2.5 py-1 border border-slate-300 rounded shadow-sm focus:ring-1 focus:ring-emerald-700 focus:outline-none bg-slate-50 text-slate-800" /></div>
+        <div><label class="block font-bold text-slate-700 mb-0.5" for="field-jobNumber">Job #:</label>
+          <input id="field-jobNumber" type="text" value="" class="w-full px-2.5 py-1 border border-slate-300 rounded shadow-sm focus:ring-1 focus:ring-emerald-700 focus:outline-none" /></div>
+        <div><label class="block font-bold text-slate-700 mb-0.5" for="field-project">Project:</label>
+          <input id="field-project" type="text" value="" class="w-full px-2.5 py-1 border border-slate-300 rounded shadow-sm focus:ring-1 focus:ring-emerald-700 focus:outline-none" /></div>
+        <div><label class="block font-bold text-slate-700 mb-0.5" for="field-company">Company:</label>
+          <input id="field-company" type="text" value="" class="w-full px-2.5 py-1 border border-slate-300 rounded shadow-sm focus:ring-1 focus:ring-emerald-700 focus:outline-none" /></div>
+        <div><label class="block font-bold text-slate-700 mb-0.5" for="field-requestedBy">Requested By:</label>
+          <input id="field-requestedBy" type="text" value="" class="w-full px-2.5 py-1 border border-slate-300 rounded shadow-sm focus:ring-1 focus:ring-emerald-700 focus:outline-none" /></div>
+        <div><label class="block font-bold text-slate-700 mb-0.5" for="field-email">Client Email:</label>
+          <input id="field-email" type="email" placeholder="client@company.com" class="w-full px-2.5 py-1 border border-slate-300 rounded shadow-sm focus:ring-1 focus:ring-emerald-700 focus:outline-none" /></div>
+        <div><label class="block font-bold text-slate-700 mb-0.5" for="field-fieldCrew">Field Crew:</label>
+          <input id="field-fieldCrew" type="text" value="" class="w-full px-2.5 py-1 border border-slate-300 rounded shadow-sm focus:ring-1 focus:ring-emerald-700 focus:outline-none" /></div>
+        <div><label class="block font-bold text-slate-700 mb-0.5" for="field-officeSurveyor">Office Surveyor:</label>
+          <input id="field-officeSurveyor" type="text" value="" class="w-full px-2.5 py-1 border border-slate-300 rounded shadow-sm focus:ring-1 focus:ring-emerald-700 focus:outline-none" /></div>
+      </div>
+
+      <div class="mt-2.5 text-xs">
+        <label class="block font-bold text-slate-700 mb-0.5" for="field-services">Surveying Services Requested:</label>
+        <textarea id="field-services" rows="2" class="w-full px-2.5 py-1.5 border border-slate-300 rounded shadow-sm focus:ring-1 focus:ring-emerald-700 focus:outline-none resize-y leading-tight"></textarea>
+      </div>
+
+      <div class="mt-3">
+        <div class="flex justify-between items-center mb-1">
+          <span class="text-xs font-bold text-slate-700">Services & Rate Schedule:</span>
+          <button type="button" onclick="addRow()" class="text-[11px] font-semibold text-emerald-800 hover:text-emerald-950 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 no-print">+ Add Line Item</button>
+        </div>
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="border-b-2 border-slate-900 bg-slate-50 text-slate-800">
+              <th class="py-1.5 px-2.5 font-bold">Service Description</th>
+              <th class="py-1.5 px-2 text-center font-bold w-20">Hours</th>
+              <th class="py-1.5 px-2 text-center font-bold w-24">Rate ($/hr)</th>
+              <th class="py-1.5 px-2.5 text-right font-bold w-28">Amount</th>
+              <th class="py-1.5 px-1 w-6 text-center no-print"></th>
+            </tr>
+          </thead>
+          <tbody id="line-items-body" class="divide-y divide-slate-200">
+            <tr class="line-item-row">
+              <td class="py-1 px-2.5"><input type="text" value="One (1) Man Survey" class="w-full bg-transparent font-medium focus:outline-none focus:bg-white" /></td>
+              <td class="py-1 px-2 text-center"><input type="number" step="0.5" min="0" value="" placeholder="0" oninput="recalculate()" class="hours-input w-16 px-1 py-0.5 text-center border border-slate-300 rounded shadow-sm focus:outline-none" /></td>
+              <td class="py-1 px-2 text-center"><input type="number" step="1" min="0" value="225" oninput="recalculate()" class="rate-input w-20 px-1 py-0.5 text-center border border-slate-300 rounded shadow-sm focus:outline-none" /></td>
+              <td class="item-amount py-1 px-2.5 text-right font-semibold text-slate-900">$0.00</td>
+              <td class="py-1 px-1 text-center no-print"><button type="button" onclick="this.closest('tr').remove(); recalculate();" class="text-rose-600 hover:text-rose-800 text-xs font-bold">&times;</button></td>
+            </tr>
+            <tr class="line-item-row">
+              <td class="py-1 px-2.5"><input type="text" value="Two (2) Man Survey" class="w-full bg-transparent font-medium focus:outline-none focus:bg-white" /></td>
+              <td class="py-1 px-2 text-center"><input type="number" step="0.5" min="0" value="" placeholder="0" oninput="recalculate()" class="hours-input w-16 px-1 py-0.5 text-center border border-slate-300 rounded shadow-sm focus:outline-none" /></td>
+              <td class="py-1 px-2 text-center"><input type="number" step="1" min="0" value="295" oninput="recalculate()" class="rate-input w-20 px-1 py-0.5 text-center border border-slate-300 rounded shadow-sm focus:outline-none" /></td>
+              <td class="item-amount py-1 px-2.5 text-right font-semibold text-slate-900">$0.00</td>
+              <td class="py-1 px-1 text-center no-print"></td>
+            </tr>
+            <tr class="line-item-row">
+              <td class="py-1 px-2.5"><input type="text" value="Office Survey" class="w-full bg-transparent font-medium focus:outline-none focus:bg-white" /></td>
+              <td class="py-1 px-2 text-center"><input type="number" step="0.5" min="0" value="" placeholder="0" oninput="recalculate()" class="hours-input w-16 px-1 py-0.5 text-center border border-slate-300 rounded shadow-sm focus:outline-none" /></td>
+              <td class="py-1 px-2 text-center"><input type="number" step="1" min="0" value="165" oninput="recalculate()" class="rate-input w-20 px-1 py-0.5 text-center border border-slate-300 rounded shadow-sm focus:outline-none" /></td>
+              <td class="item-amount py-1 px-2.5 text-right font-semibold text-slate-900">$0.00</td>
+              <td class="py-1 px-1 text-center no-print"></td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr class="border-t-2 border-slate-900 bg-slate-50 font-bold text-slate-900">
+              <td colspan="3" class="py-1.5 px-2.5 text-right uppercase tracking-wider text-[11px]">Total Amount Due:</td>
+              <td id="calc-total" class="py-1.5 px-2.5 text-right text-sm text-emerald-800 font-extrabold">$0.00</td>
+              <td class="no-print"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-3 text-xs">
+        <div class="border border-slate-300 rounded-lg p-2.5 bg-slate-50">
+          <div class="flex justify-between items-center mb-1">
+            <span class="font-bold text-slate-700">Staked by (Field Surveyor):</span>
+            <button type="button" onclick="clearSignature('canvas1')" class="text-[11px] text-rose-700 hover:text-rose-900 font-semibold px-1.5 py-0.2 rounded border border-rose-200 bg-white hover:bg-rose-50 no-print">Clear</button>
+          </div>
+          <canvas id="canvas1" width="360" height="85" class="w-full h-20 bg-white border border-dashed border-slate-400 rounded cursor-crosshair touch-none"></canvas>
+        </div>
+        <div class="border border-slate-300 rounded-lg p-2.5 bg-slate-50">
+          <div class="flex justify-between items-center mb-1">
+            <span class="font-bold text-slate-700">Approved by (Client/Contractor):</span>
+            <button type="button" onclick="clearSignature('canvas2')" class="text-[11px] text-rose-700 hover:text-rose-900 font-semibold px-1.5 py-0.2 rounded border border-rose-200 bg-white hover:bg-rose-50 no-print">Clear</button>
+          </div>
+          <canvas id="canvas2" width="360" height="85" class="w-full h-20 bg-white border border-dashed border-slate-400 rounded cursor-crosshair touch-none"></canvas>
+        </div>
+      </div>
+
+      <div class="mt-3 pt-2 border-t border-slate-300 text-center text-slate-500 text-[11px] leading-tight">
+        <p class="font-bold text-slate-800 tracking-wide">Northstar Engineering Group, Inc.</p>
+        <p class="mt-0.5">620 12th Street • Modesto, CA 95354 • Phone: (209) 524-3525 • Fax: (209) 524-3526</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("field-date").value = new Date().toISOString().split("T")[0];
+      initSignaturePad("canvas1");
+      initSignaturePad("canvas2");
+      recalculate();
+    });
+
+    function recalculate() {
+      let grandTotal = 0;
+      document.querySelectorAll("#line-items-body .line-item-row").forEach(row => {
+        const h = parseFloat(row.querySelector(".hours-input").value) || 0;
+        const r = parseFloat(row.querySelector(".rate-input").value) || 0;
+        const amt = h * r;
+        grandTotal += amt;
+        row.querySelector(".item-amount").innerText = "$" + amt.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      });
+      document.getElementById("calc-total").innerText = "$" + grandTotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      return grandTotal;
+    }
+
+    function addRow() {
+      const tr = document.createElement("tr");
+      tr.className = "line-item-row";
+      tr.innerHTML = `
+        <td class="py-1 px-2.5"><input type="text" placeholder="Additional Surveying Service" class="w-full bg-transparent font-medium focus:outline-none focus:bg-white" /></td>
+        <td class="py-1 px-2 text-center"><input type="number" step="0.5" min="0" value="" placeholder="0" oninput="recalculate()" class="hours-input w-16 px-1 py-0.5 text-center border border-slate-300 rounded shadow-sm focus:outline-none" /></td>
+        <td class="py-1 px-2 text-center"><input type="number" step="1" min="0" value="150" oninput="recalculate()" class="rate-input w-20 px-1 py-0.5 text-center border border-slate-300 rounded shadow-sm focus:outline-none" /></td>
+        <td class="item-amount py-1 px-2.5 text-right font-semibold text-slate-900">$0.00</td>
+        <td class="py-1 px-1 text-center no-print"><button type="button" onclick="this.closest('tr').remove(); recalculate();" class="text-rose-600 hover:text-rose-800 text-xs font-bold">&times;</button></td>`;
+      document.getElementById("line-items-body").appendChild(tr);
+      recalculate();
+    }
+
+    const padStates = {};
+    function initSignaturePad(canvasId) {
+      const canvas = document.getElementById(canvasId);
+      const ctx = canvas.getContext("2d");
+      padStates[canvasId] = { isDrawing: false };
+      const getCoord = (e) => {
+        const rect = canvas.getBoundingClientRect();
+        return { x: ((e.clientX - rect.left) * canvas.width) / rect.width, y: ((e.clientY - rect.top) * canvas.height) / rect.height };
+      };
+      canvas.addEventListener("pointerdown", (e) => {
+        e.preventDefault();
+        padStates[canvasId].isDrawing = true;
+        ctx.lineWidth = 2.2; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.strokeStyle = "#091e11";
+        const pt = getCoord(e);
+        ctx.beginPath(); ctx.moveTo(pt.x, pt.y);
+      });
+      canvas.addEventListener("pointermove", (e) => {
+        if (!padStates[canvasId].isDrawing) return;
+        e.preventDefault();
+        const pt = getCoord(e);
+        ctx.lineTo(pt.x, pt.y); ctx.stroke();
+      });
+      const stop = () => { padStates[canvasId].isDrawing = false; };
+      ["pointerup", "pointerleave", "pointercancel"].forEach(ev => canvas.addEventListener(ev, stop));
+    }
+
+    function clearSignature(canvasId) {
+      const canvas = document.getElementById(canvasId);
+      canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // jsPDF's built-in fonts only support Latin-1: swap fancy characters so text never turns into garbage.
+    function clean(str) {
+      return String(str == null ? "" : str)
+        .replace(/[\u2018\u2019\u201A\u2032]/g, "'")
+        .replace(/[\u201C\u201D\u201E\u2033]/g, '"')
+        .replace(/[\u2013\u2014\u2212]/g, "-")
+        .replace(/\u2026/g, "...")
+        .replace(/[\u00A0\u2000-\u200B\u202F]/g, " ")
+        .replace(/\u2022/g, "-")
+        .replace(/[\r\n\t]+/g, " ")
+        .replace(/[^\x20-\x7E\u00A1-\u00FF]/g, "");
+    }
+
+    // Re-encode any image as a plain baseline JPEG on a white background.
+    // This avoids transparent-PNG and odd-JPEG (progressive/CMYK) data that makes PDFs "corrupt" in Mail/Preview.
+    function toFlatJpeg(source, w, h) {
+      const c = document.createElement("canvas");
+      c.width = w; c.height = h;
+      const cx = c.getContext("2d");
+      cx.fillStyle = "#ffffff"; cx.fillRect(0, 0, w, h);
+      cx.drawImage(source, 0, 0, w, h);
+      return c.toDataURL("image/jpeg", 0.92);
+    }
+
+    // Builds the PDF directly with real (selectable, sharp) text instead of a screenshot of the page.
+    function generatePdfInstance() {
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ orientation: "p", unit: "pt", format: "letter", compress: false });
+      pdf.setProperties({ title: "North Star Extra Work Order", author: "North Star Engineering Group, Inc." });
+      const PW = 612, PH = 792, M = 36, CW = PW - 2 * M;
+      const v = (id) => clean(document.getElementById(id).value || "");
+      const green = [6, 78, 59], line = [203, 213, 225];
+      let y = M;
+
+      const fmtDate = (s) => s ? new Date(s + "T00:00:00").toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "";
+      const label = (t, x, yy) => { pdf.setFont("helvetica", "bold"); pdf.setFontSize(8.5); pdf.setTextColor(51, 65, 85); pdf.text(t, x, yy); };
+      const body = () => { pdf.setFont("helvetica", "normal"); pdf.setFontSize(10); pdf.setTextColor(15, 23, 42); };
+
+      // Logo + header rule
+      const logo = document.querySelector("#work-order-sheet img");
+      const lh = 72, lw = lh * (logo.naturalWidth / logo.naturalHeight);
+      try { pdf.addImage(toFlatJpeg(logo, logo.naturalWidth, logo.naturalHeight), "JPEG", M, y, lw, lh); } catch (e) { console.error("Logo failed", e); }
+      y += lh + 8;
+      pdf.setDrawColor(...green); pdf.setLineWidth(1.5); pdf.line(M, y, PW - M, y);
+
+      // Title
+      y += 28;
+      pdf.setFont("helvetica", "bold"); pdf.setFontSize(16); pdf.setTextColor(2, 44, 34);
+      pdf.text("EXTRA WORK ORDER", PW / 2, y, { align: "center" });
+      y += 24;
+
+      // Info grid
+      const gap = 14, colW = (CW - gap) / 2;
+      const rows = [
+        ["Date:", fmtDate(v("field-date")), "Job #:", v("field-jobNumber")],
+        ["Project:", v("field-project"), "Company:", v("field-company")],
+        ["Requested By:", v("field-requestedBy"), "Client Email:", v("field-email")],
+        ["Field Crew:", v("field-fieldCrew"), "Office Surveyor:", v("field-officeSurveyor")],
+      ];
+      rows.forEach((r) => {
+        [0, 1].forEach((i) => {
+          const x = M + i * (colW + gap);
+          label(r[i * 2], x, y);
+          pdf.setDrawColor(...line); pdf.setLineWidth(0.7); pdf.roundedRect(x, y + 4, colW, 18, 2, 2);
+          body();
+          pdf.text(pdf.splitTextToSize(String(r[i * 2 + 1]), colW - 12)[0] || "", x + 6, y + 16);
+        });
+        y += 36;
+      });
+
+      // Services requested
+      label("Surveying Services Requested:", M, y);
+      const sLines = pdf.splitTextToSize(v("field-services"), CW - 12);
+      const sH = Math.max(24, sLines.length * 12 + 10);
+      pdf.setDrawColor(...line); pdf.roundedRect(M, y + 4, CW, sH, 2, 2);
+      body(); pdf.text(sLines, M + 6, y + 18);
+      y += sH + 22;
+
+      // Rate table
+      const hX = M + CW - 215, rX = M + CW - 140, aR = M + CW - 8, dW = CW - 250;
+      label("Services & Rate Schedule:", M, y); y += 6;
+      pdf.setFillColor(248, 250, 252); pdf.rect(M, y, CW, 20, "F");
+      pdf.setDrawColor(15, 23, 42); pdf.setLineWidth(1.2); pdf.line(M, y + 20, PW - M, y + 20);
+      pdf.setFont("helvetica", "bold"); pdf.setFontSize(9); pdf.setTextColor(30, 41, 59);
+      pdf.text("Service Description", M + 8, y + 13);
+      pdf.text("Hours", hX, y + 13, { align: "center" });
+      pdf.text("Rate ($/hr)", rX, y + 13, { align: "center" });
+      pdf.text("Amount", aR, y + 13, { align: "right" });
+      y += 20;
+
+      let total = 0;
+      document.querySelectorAll("#line-items-body .line-item-row").forEach((row) => {
+        const desc = clean(row.querySelector("input[type=text]").value);
+        const h = parseFloat(row.querySelector(".hours-input").value) || 0;
+        const r = parseFloat(row.querySelector(".rate-input").value) || 0;
+        const amt = h * r; total += amt;
+        const dLines = pdf.splitTextToSize(desc, dW);
+        const rH = Math.max(22, dLines.length * 12 + 10);
+        if (y + rH > PH - 200) { pdf.addPage(); y = M; }
+        body();
+        pdf.text(dLines, M + 8, y + 14);
+        pdf.text(String(h), hX, y + 14, { align: "center" });
+        pdf.text("$" + r.toLocaleString("en-US", { minimumFractionDigits: 2 }), rX, y + 14, { align: "center" });
+        pdf.setFont("helvetica", "bold");
+        pdf.text("$" + amt.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }), aR, y + 14, { align: "right" });
+        pdf.setDrawColor(...line); pdf.setLineWidth(0.6); pdf.line(M, y + rH, PW - M, y + rH);
+        y += rH;
+      });
+
+      pdf.setFillColor(248, 250, 252); pdf.rect(M, y, CW, 26, "F");
+      pdf.setDrawColor(15, 23, 42); pdf.setLineWidth(1.2); pdf.line(M, y, PW - M, y);
+      pdf.setFont("helvetica", "bold"); pdf.setFontSize(9); pdf.setTextColor(15, 23, 42);
+      pdf.text("TOTAL AMOUNT DUE:", aR - 80, y + 17, { align: "right" });
+      pdf.setFontSize(13); pdf.setTextColor(6, 95, 70);
+      pdf.text("$" + total.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }), aR, y + 18, { align: "right" });
+      y += 44;
+
+      // Signatures
+      if (y + 120 > PH - 60) { pdf.addPage(); y = M; }
+      const sigH = Math.round(colW * 85 / 360);
+      [["Staked by (Field Surveyor):", "canvas1"], ["Approved by (Client/Contractor):", "canvas2"]].forEach(([t, id], i) => {
+        const x = M + i * (colW + gap);
+        label(t, x, y);
+        pdf.setDrawColor(148, 163, 184); pdf.setLineWidth(0.8); pdf.roundedRect(x, y + 4, colW, sigH, 2, 2);
+        const cv = document.getElementById(id);
+        pdf.addImage(toFlatJpeg(cv, cv.width, cv.height), "JPEG", x + 0.5, y + 4.5, colW - 1, sigH - 1);
+      });
+      y += sigH + 34;
+
+      // Footer
+      pdf.setDrawColor(...line); pdf.setLineWidth(0.7); pdf.line(M, y, PW - M, y);
+      pdf.setFont("helvetica", "bold"); pdf.setFontSize(9); pdf.setTextColor(30, 41, 59);
+      pdf.text("Northstar Engineering Group, Inc.", PW / 2, y + 14, { align: "center" });
+      pdf.setFont("helvetica", "normal"); pdf.setFontSize(8); pdf.setTextColor(100, 116, 139);
+      pdf.text("620 12th Street  |  Modesto, CA 95354  |  Phone: (209) 524-3525  |  Fax: (209) 524-3526", PW / 2, y + 26, { align: "center" });
+      return pdf;
+    }
+
+    
+    function showToast(msg) {
+      const toast = document.getElementById("toast");
+      document.getElementById("toast-text").innerText = msg;
+      toast.classList.remove("hidden");
+      setTimeout(() => toast.classList.add("hidden"), 5000);
+    }
+    function dismissToast() { document.getElementById("toast").classList.add("hidden"); }
+
+    async function handleDownloadPdf() {
+      const btn = document.getElementById("btn-download");
+      const origText = btn.innerHTML;
+      btn.disabled = true; btn.innerText = "Exporting...";
+      try {
+        const job = (document.getElementById("field-jobNumber").value || "Draft").replace(/[^A-Za-z0-9_-]+/g, "-");
+        const pdf = generatePdfInstance();
+        pdf.save(`NorthStar_WorkOrder_${job}.pdf`);
+        showToast(`Downloaded: NorthStar_WorkOrder_${job}.pdf`);
+      } catch (err) {
+        console.error("PDF generation failed:", err);
+        showToast("Could not create the PDF. Please try again.");
+      } finally {
+        btn.disabled = false; btn.innerHTML = origText;
+      }
+    }
+
+    function openPdfViewer(pdfBytes) {
+      const url = URL.createObjectURL(new Blob([pdfBytes], { type: "application/pdf" }));
+      const w = window.open(url, "_blank");
+      if (!w) window.location.href = url;
+      showToast("PDF opened. Tap the Share button, then choose Mail or your email app.");
+    }
+
+    function handleOpenPdf() {
+      try {
+        const pdf = generatePdfInstance();
+        openPdfViewer(pdf.output("arraybuffer"));
+      } catch (err) {
+        console.error(err);
+        showToast("Could not create the PDF (" + (err && err.message ? err.message : "unknown error") + ").");
+      }
+    }
+
+    async function handleEmailWithPdf() {
+      const btn = document.getElementById("btn-save-email");
+      const origText = btn.innerHTML;
+      btn.disabled = true; btn.innerText = "Preparing...";
+      try {
+        const v = (id) => document.getElementById(id).value;
+        const job = (v("field-jobNumber") || "Draft").replace(/[^A-Za-z0-9_-]+/g, "-");
+        const filename = `NorthStar_WorkOrder_${job}.pdf`;
+        const pdf = generatePdfInstance();
+        const pdfBytes = pdf.output("arraybuffer");
+        if (!pdfBytes || pdfBytes.byteLength < 1000) throw new Error("PDF came out empty");
+        // Integrity check: a valid PDF starts with %PDF- and ends with %%EOF
+        const u8 = new Uint8Array(pdfBytes);
+        const head = String.fromCharCode(...u8.slice(0, 5));
+        const tail = String.fromCharCode(...u8.slice(Math.max(0, u8.length - 32))).trim();
+        if (head !== "%PDF-" || !tail.endsWith("%%EOF")) throw new Error("PDF failed integrity check");
+        const file = new File([pdfBytes], filename, { type: "application/pdf" });
+        const project = v("field-project");
+        const totalAmt = document.getElementById("calc-total").innerText;
+        const subject = `North Star Extra Work Order - Job #${job} (${project})`;
+        const text =
+`Please find the signed Extra Work Order attached.
+
+Job #: ${job}
+Project: ${project}
+Company: ${v("field-company")}
+Date: ${v("field-date")}
+Total Amount Due: ${totalAmt}
+
+North Star Engineering Group, Inc.
+620 12th Street, Modesto, CA 95354
+P: (209) 524-3525 / F: (209) 524-3526`;
+
+        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+                         (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+        if (isMobile) {
+          // Preferred: share sheet with the PDF attached -> pick Mail
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            try {
+              await navigator.share({ files: [file], title: subject });
+              showToast("Choose your email app to send the PDF.");
+              return;
+            } catch (e) {
+              if (e.name === "AbortError") return;
+              console.warn("Share failed, opening PDF viewer instead:", e);
+            }
+          }
+          // Fallback: open the real PDF in the phone's viewer; its Share button attaches it
+          openPdfViewer(pdfBytes);
+          return;
+        }
+
+        // Desktop fallback: save the PDF, then open an email draft to attach it to
+        pdf.save(filename);
+        showToast("PDF saved. Attach it to the email draft that opens.");
+        window.location.href = `mailto:${v("field-email")}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text + `\n\n[Attach: ${filename}]`)}`;
+      } catch (err) {
+        console.error("Export failed:", err);
+        showToast("Could not prepare the PDF (" + (err && err.message ? err.message : "unknown error") + "). Try Download PDF instead.");
+      } finally {
+        btn.disabled = false; btn.innerHTML = origText;
+      }
+    }
+  </script>
+</body>
+</html>
